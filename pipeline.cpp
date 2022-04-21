@@ -107,7 +107,7 @@ bool Pipeline::hasDependency(void) {
 			else if (i - DECODE == 3 || i - DECODE == 2)
 				return false;
 			else
-				return false
+				return false;
 
 		}
 
