@@ -98,7 +98,7 @@ bool Pipeline::hasDependency(void) {
 		     pipeline[i].inst->dest == pipeline[DECODE].inst->src2) ) {
 			//EXEC/MEM-->DECODE
 			if (i - DECODE <= 2) {
-				if (i == 2 && (pipeline[i].inst->type == LW || pipeline[i].inst->type == SW))
+				if (i == 2 && pipeline[i].inst->type == LW)
 					return true;
 				else
 					return false;
