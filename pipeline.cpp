@@ -104,11 +104,8 @@ bool Pipeline::hasDependency(void) {
 					return false;
 			}
 			//MEM/WB-->DECODE
-			else if (i - DECODE == 3 || i - DECODE == 2)
+			if (i - DECODE == 3 || i - DECODE == 2)
 				return false;
-			else
-				return false;
-
 		}
 
 	}
