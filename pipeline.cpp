@@ -9,51 +9,42 @@
 void Pipeline::cycle(void) {
 
 	cycleTime += 1;
-	// Check for data hazards
-	// NOTE: Technically, data hazards are detected in the Decode stage. If a data hazard is detected, at the end of the cycle we write 0's (NOP) to the pipeline register so that a NOP will be generated in the EXEC stage in the next cycle. 
-	// Doing the check here does a dependency check on the instructions in the previous cycle (we haven't advanced the instructions in the pipeline yet). If a dependency exist in the previous cycle, we stall the pipeline in this cycle.
-	bool dependencyDetected = hasDependency();
 
-
-	// WRITEBACK STAGE
-	// Mem -> WB Pipeline register
-	pipeline[WB].addInstruction(pipeline[MEM].inst);	
 
 	// Writeback
-	pipeline[WB].process();
+	pipeline[WB].clear();
 
-	// MEM STAGE
-	// Exec -> Mem Pipeline register
+	// Mem -> WB
+	pipeline[WB].addInstruction(pipeline[MEM].inst);	
+
+	// Mem
+	pipeline[MEM].clear();
+	
+	// Exec -> Mem
 	pipeline[MEM].addInstruction(pipeline[EXEC].inst);	
 	
-	// Mem
-	pipeline[MEM].process();
-	
-        // EXEC STAGE
-	// Decode -> Exec Pipeline register
-	// If dependency detected, stall by inserting NOP instruction
-	if(!dependencyDetected)
-		pipeline[EXEC].addInstruction(pipeline[DECODE].inst);	
-	else 
-		pipeline[EXEC].addInstruction(new Instruction());
-	
 	// Exec
-	pipeline[EXEC].process();
-	
-	// DECODE STAGE
-	// Fetch -> Decode Pipeline register
-	if(!dependencyDetected)
-		pipeline[DECODE].addInstruction(pipeline[FETCH].inst);	
+	pipeline[EXEC].clear();
 
-	// Decode 
-	pipeline[DECODE].process();
-	
-	// FETCH STAGE
-	// Fetch
-	if(!dependencyDetected){
-		pipeline[FETCH].addInstruction(application->getNextInstruction());
-		pipeline[FETCH].process();
+	// Check for data hazards
+	if(hasDependency()){
+		// If dependency detected, stall by inserting NOP instruction
+		pipeline[EXEC].addInstruction(new Instruction());
+		return;
 	}
+	
+	// Decode -> Exec
+	pipeline[EXEC].addInstruction(pipeline[DECODE].inst);	
+	
+	// Decode 
+	pipeline[DECODE].clear();
+	
+	// Fetch -> Decode
+	pipeline[DECODE].addInstruction(pipeline[FETCH].inst);	
+	
+	// Fetch
+	pipeline[FETCH].clear();
+	pipeline[FETCH].addInstruction(application->getNextInstruction());
 }
 
 void PipelineStage::process() {
