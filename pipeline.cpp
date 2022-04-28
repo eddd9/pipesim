@@ -27,15 +27,17 @@ void Pipeline::cycle(void) {
 	pipeline[EXEC].clear();
 
 	// Check for data hazards
-	if(!result){
-		// Decode -> Exec
-	pipeline[EXEC].addInstruction(pipeline[DECODE].inst);	
+	if(hasDependency()){
+		// If dependency detected, stall by inserting NOP instruction
+		pipeline[EXEC].addInstruction(new Instruction());
+		return;
+		
 		
 	}
 	else{
-	// If dependency detected, stall by inserting NOP instruction
-		pipeline[EXEC].addInstruction(new Instruction());
-		return;
+		// Decode -> Exec
+	pipeline[EXEC].addInstruction(pipeline[DECODE].inst);	
+	
 	}
 	
 	
