@@ -99,9 +99,7 @@ bool Pipeline::hasDependency(void) {
 
 				// Forwarding for EXEC/MEM pipeline register to EXEC stage is enabled(-f 1)
 
-				if (pipeline[i].inst->type == LW && i == MEM)
-					return true;
-				else if (pipeline[i].inst->type == SW && i == MEM)
+				if (i == MEM&&(pipeline[i].inst->type == LW ||pipeline[i].inst->type == SW))
 					return true;
 				else if (i > MEM)
 					return true;
