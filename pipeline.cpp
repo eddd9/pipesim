@@ -27,7 +27,7 @@ void Pipeline::cycle(void) {
 	pipeline[EXEC].clear();
 
 	// Check for data hazards
-	if(hasDependency()){
+	if(result){
 		// If dependency detected, stall by inserting NOP instruction
 		pipeline[EXEC].addInstruction(new Instruction());
 		return;
