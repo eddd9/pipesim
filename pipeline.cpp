@@ -53,7 +53,7 @@ void Pipeline::cycle(void) {
 	pipeline[FETCH].addInstruction(application->getNextInstruction());
 	
 	if(pipeline[FETCH].inst->src1 == -1)
-	   break;
+	   return;
 }
 
 void PipelineStage::process() {
