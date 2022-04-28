@@ -100,7 +100,7 @@ bool Pipeline::hasDependency(void) {
 			//MEM/WB-->DECODE
 			if(forwarding){
 				
-				if (i == 2 && (pipeline[i].inst->type == SW || pipeline[i].inst->type == LW))
+				if (i == 2 &&pipeline[i].inst->type == LW)
 					return true;
 				else
 					continue;
