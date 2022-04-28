@@ -95,30 +95,22 @@ bool Pipeline::hasDependency(void) {
 		if( (pipeline[i].inst->dest != -1) && 
 		    (pipeline[i].inst->dest == pipeline[DECODE].inst->src1 ||
 		     pipeline[i].inst->dest == pipeline[DECODE].inst->src2) ) {
+			//EXEC/MEM-->DECODE
 			if(i - DECODE <= 2) {
-
-				// Forwarding for EXEC/MEM pipeline register to EXEC stage is enabled(-f 1)
-
 				if (i == MEM&&(pipeline[i].inst->type == LW ||pipeline[i].inst->type == SW))
 					return true;
 				else if (i > MEM)
 					return true;
 				else continue;
 			}
-
+                        //MEM/WB-->DECODE
 			else if (i - DECODE == 3 || i - DECODE == 2){
-
-				// Forwarding for EXEC/MEM pipeline register to EXEC stage and
-				// MEM/WB to EXEC stage is enabled.(-f 2)
-
-				if (pipeline[i].inst->type == LW && i==MEM)
-					return true;
-				else if (pipeline[i].inst->type == SW && i== MEM)
+				if (i == MEM&&(pipeline[i].inst->type == LW ||pipeline[i].inst->type == SW))
 					return true;
 				else continue;
 
 			}
-			else return true; // Forwarding is disabled(-f 0)
+			else return true; 
 		}
 
 	}
