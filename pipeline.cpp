@@ -9,39 +9,39 @@
 void Pipeline::cycle(void) {
 
 	cycleTime += 1;
-
-
-	// Writeback
-	pipeline[WB].clear();
-
-	// Mem -> WB
-	pipeline[WB].addInstruction(pipeline[MEM].inst);	
-
-	// Mem
-	pipeline[MEM].clear();
+	// Check for data hazards
+	// NOTE: Technically, data hazards are detected in the Decode stage. If a data hazard is detected, at the end of the cycle we write 0's (NOP) to the pipeline register so that a NOP will be generated in the EXEC stage in the next cycle. 
+	// Doing the check here does a dependency check on the instructions in the previous cycle (we haven't advanced the instructions in the pipeline yet). If a dependency exist in the previous cycle, we stall the pipeline in this cycle.
+	bool dependencyDetected = hasDependency();
 	
-	// Exec -> Mem
+	// WRITEBACK STAGE
+	// Mem -> WB Pipeline register
+	pipeline[WB].clear();
+	pipeline[WB].addInstruction(pipeline[MEM].inst);	
+	
+        // MEM STAGE
+	// Exec -> Mem Pipeline register
+	pipeline[MEM].clear();
 	pipeline[MEM].addInstruction(pipeline[EXEC].inst);	
 	
-	// Exec
+	// EXEC STAGE
+	// If dependency detected, stall by inserting NOP instruction
 	pipeline[EXEC].clear();
-
-	// Check for data hazards
-	if(hasDependency()){
-		// If dependency detected, stall by inserting NOP instruction
+	if(dependencyDetected){
 		pipeline[EXEC].addInstruction(new Instruction());
 		return;
 	}
 	
-	// Decode -> Exec
+	// Decode -> Exec Pipeline register
 	pipeline[EXEC].addInstruction(pipeline[DECODE].inst);	
 	
-	// Decode 
+	// DECODE STAGE
 	pipeline[DECODE].clear();
 	
-	// Fetch -> Decode
+	// Fetch -> Decode Pipeline register
 	pipeline[DECODE].addInstruction(pipeline[FETCH].inst);	
 	
+	// FETCH STAGE
 	// Fetch
 	pipeline[FETCH].clear();
 	pipeline[FETCH].addInstruction(application->getNextInstruction());
