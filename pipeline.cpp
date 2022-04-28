@@ -9,7 +9,7 @@
 void Pipeline::cycle(void) {
 
 	cycleTime += 1;
-
+        bool result=hasDependency();
 
 	// Writeback
 	pipeline[WB].clear();
