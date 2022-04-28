@@ -9,33 +9,33 @@
 void Pipeline::cycle(void) {
 
 	cycleTime += 1;
-        bool result=hasDependency();
+        bool dependencyDetected=hasDependency();
 
-	// Writeback
+	// WRITEBACK STAGE
 	pipeline[WB].clear();
 
-	// Mem -> WB
+	
+	// Mem -> WB Pipeline register
 	pipeline[WB].addInstruction(pipeline[MEM].inst);	
 
 	// Mem
 	pipeline[MEM].clear();
 	
-	// Exec -> Mem
+	// MEM STAGE
+	// Exec -> Mem Pipeline register
 	pipeline[MEM].addInstruction(pipeline[EXEC].inst);	
 	
-	// Exec
+	// EXEC STAGE
 	pipeline[EXEC].clear();
 
-	// Check for data hazards
+	
+	// If dependency detected, stall by inserting NOP instruction
 	if(hasDependency()){
-		// If dependency detected, stall by inserting NOP instruction
 		pipeline[EXEC].addInstruction(new Instruction());
-		return;
-		
-		
+		return;	
 	}
 	else{
-		// Decode -> Exec
+		// Decode -> Exec Pipeline register
 	pipeline[EXEC].addInstruction(pipeline[DECODE].inst);	
 	
 	}
@@ -45,9 +45,11 @@ void Pipeline::cycle(void) {
 	// Decode 
 	pipeline[DECODE].clear();
 	
-	// Fetch -> Decode
+	// DECODE STAGE
+	// Fetch -> Decode Pipeline register
 	pipeline[DECODE].addInstruction(pipeline[FETCH].inst);	
 	
+	// FETCH STAGE
 	// Fetch
 	pipeline[FETCH].clear();
 	pipeline[FETCH].addInstruction(application->getNextInstruction());
