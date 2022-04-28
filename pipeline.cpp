@@ -101,11 +101,11 @@ bool Pipeline::hasDependency(void) {
 				if (i == 2 && pipeline[i].inst->type == LW)
 					return true;
 				else
-					return false;
+					continue;
 			}
 			//MEM/WB-->DECODE
 			if (i - DECODE == 3 || i - DECODE == 2)
-				return false;
+				continue;
 		}
 
 	}
