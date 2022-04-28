@@ -52,7 +52,7 @@ void Pipeline::cycle(void) {
 	pipeline[FETCH].clear();
 	pipeline[FETCH].addInstruction(application->getNextInstruction());
 	
-	if( (pipeline[FETCH].inst->src1 == -1)
+	if(pipeline[FETCH].inst->src1 == -1)
 	   break;
 }
 
