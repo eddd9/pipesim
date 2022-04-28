@@ -9,44 +9,42 @@
 void Pipeline::cycle(void) {
 
 	cycleTime += 1;
+	// Check for data hazards
+	// NOTE: Technically, data hazards are detected in the Decode stage. If a data hazard is detected, at the end of the cycle we write 0's (NOP) to the pipeline register so that a NOP will be generated in the EXEC stage in the next cycle. 
+	// Doing the check here does a dependency check on the instructions in the previous cycle (we haven't advanced the instructions in the pipeline yet). If a dependency exist in the previous cycle, we stall the pipeline in this cycle.
         bool dependencyDetected=hasDependency();
 
 	// WRITEBACK STAGE
-	pipeline[WB].clear();
-
-	
+	// Writeback
 	// Mem -> WB Pipeline register
+	pipeline[WB].clear();
 	pipeline[WB].addInstruction(pipeline[MEM].inst);	
 
-	// Mem
-	pipeline[MEM].clear();
-	
 	// MEM STAGE
+	// Mem
 	// Exec -> Mem Pipeline register
+	pipeline[MEM].clear();
 	pipeline[MEM].addInstruction(pipeline[EXEC].inst);	
 	
 	// EXEC STAGE
-	pipeline[EXEC].clear();
-
-	
+	// Decode -> Exec Pipeline register
 	// If dependency detected, stall by inserting NOP instruction
+	pipeline[EXEC].clear();
 	if(hasDependency()){
 		pipeline[EXEC].addInstruction(new Instruction());
 		return;	
 	}
 	else{
-		// Decode -> Exec Pipeline register
 	pipeline[EXEC].addInstruction(pipeline[DECODE].inst);	
 	
 	}
 	
 	
 	
-	// Decode 
-	pipeline[DECODE].clear();
-	
 	// DECODE STAGE
+	// Decode 
 	// Fetch -> Decode Pipeline register
+	pipeline[DECODE].clear();
 	pipeline[DECODE].addInstruction(pipeline[FETCH].inst);	
 	
 	// FETCH STAGE
@@ -108,7 +106,6 @@ bool Pipeline::hasDependency(void) {
 				if (i == MEM&&(pipeline[i].inst->type == LW ||pipeline[i].inst->type == SW))
 					return true;
 				else continue;
-
 			}
 			else return true; 
 		}
