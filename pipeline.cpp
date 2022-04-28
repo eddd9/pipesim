@@ -51,6 +51,9 @@ void Pipeline::cycle(void) {
 	// Fetch
 	pipeline[FETCH].clear();
 	pipeline[FETCH].addInstruction(application->getNextInstruction());
+	
+	if( (pipeline[FETCH].inst->src1 == -1)
+	   break;
 }
 
 void PipelineStage::process() {
