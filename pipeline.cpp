@@ -97,10 +97,17 @@ bool Pipeline::hasDependency(void) {
 		    (pipeline[i].inst->dest == pipeline[DECODE].inst->src1 ||
 		     pipeline[i].inst->dest == pipeline[DECODE].inst->src2) ) {
 			if(forwarding){
-				if (i == 2 && pipeline[i].inst->type == LW)
+				//EXEC/MEM-->DECODE
+			if (i - DECODE <= 2) {
+				if (i == 2 && (pipeline[i].inst->type == SW || pipeline[i].inst->type == LW))
 					return true;
 				else
 					continue;
+			}
+			//MEM/WB-->DECODE
+			if (i - DECODE == 3 || i - DECODE == 2)
+				continue;
+
 			
 			}
 		}
