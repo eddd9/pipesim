@@ -12,48 +12,48 @@ void Pipeline::cycle(void) {
 	// Check for data hazards
 	// NOTE: Technically, data hazards are detected in the Decode stage. If a data hazard is detected, at the end of the cycle we write 0's (NOP) to the pipeline register so that a NOP will be generated in the EXEC stage in the next cycle. 
 	// Doing the check here does a dependency check on the instructions in the previous cycle (we haven't advanced the instructions in the pipeline yet). If a dependency exist in the previous cycle, we stall the pipeline in this cycle.
-        bool dependencyDetected=hasDependency();
+	bool dependencyDetected = hasDependency();
+
 
 	// WRITEBACK STAGE
-	// Writeback
 	// Mem -> WB Pipeline register
-	pipeline[WB].clear();
 	pipeline[WB].addInstruction(pipeline[MEM].inst);	
 
+	// Writeback
+	pipeline[WB].process();
+
 	// MEM STAGE
-	// Mem
 	// Exec -> Mem Pipeline register
-	pipeline[MEM].clear();
 	pipeline[MEM].addInstruction(pipeline[EXEC].inst);	
 	
-	// EXEC STAGE
+	// Mem
+	pipeline[MEM].process();
+	
+        // EXEC STAGE
 	// Decode -> Exec Pipeline register
 	// If dependency detected, stall by inserting NOP instruction
-	pipeline[EXEC].clear();
-	if(hasDependency()){
+	if(!dependencyDetected)
+		pipeline[EXEC].addInstruction(pipeline[DECODE].inst);	
+	else 
 		pipeline[EXEC].addInstruction(new Instruction());
-		return;	
-	}
-	else{
-	pipeline[EXEC].addInstruction(pipeline[DECODE].inst);	
 	
-	}
-	
-	
+	// Exec
+	pipeline[EXEC].process();
 	
 	// DECODE STAGE
-	// Decode 
 	// Fetch -> Decode Pipeline register
-	pipeline[DECODE].clear();
-	pipeline[DECODE].addInstruction(pipeline[FETCH].inst);	
+	if(!dependencyDetected)
+		pipeline[DECODE].addInstruction(pipeline[FETCH].inst);	
+
+	// Decode 
+	pipeline[DECODE].process();
 	
 	// FETCH STAGE
 	// Fetch
-	pipeline[FETCH].clear();
-	pipeline[FETCH].addInstruction(application->getNextInstruction());
-	
-	if(pipeline[FETCH].inst->src1 == -1)
-	   return;
+	if(!dependencyDetected){
+		pipeline[FETCH].addInstruction(application->getNextInstruction());
+		pipeline[FETCH].process();
+	}
 }
 
 void PipelineStage::process() {
@@ -96,21 +96,13 @@ bool Pipeline::hasDependency(void) {
 		if( (pipeline[i].inst->dest != -1) && 
 		    (pipeline[i].inst->dest == pipeline[DECODE].inst->src1 ||
 		     pipeline[i].inst->dest == pipeline[DECODE].inst->src2) ) {
-			//EXEC/MEM-->DECODE
-			if(i - DECODE <= 2) {
-				if (i == MEM&&(pipeline[i].inst->type == LW ||pipeline[i].inst->type == SW))
+			if(forwarding){
+				if (i == 2 && pipeline[i].inst->type == LW)
 					return true;
-				else if (i > MEM)
-					return true;
-				else continue;
+				else
+					continue;
+			
 			}
-                        //MEM/WB-->DECODE
-			else if (i - DECODE == 3 || i - DECODE == 2){
-				if (i == MEM&&(pipeline[i].inst->type == LW ||pipeline[i].inst->type == SW))
-					return true;
-				else continue;
-			}
-			else return true; 
 		}
 
 	}
@@ -342,3 +334,4 @@ Instruction* Application::getNextInstruction() {
 	
 	return nextInst;
 }
+
