@@ -31,11 +31,11 @@ void Pipeline::cycle(void) {
 	
         // EXEC STAGE
 	// Decode -> Exec Pipeline register
-	// If dependency detected, stall by inserting NOP instruction
-	if(!dependencyDetected)
-		pipeline[EXEC].addInstruction(pipeline[DECODE].inst);	
-	else 
-		pipeline[EXEC].addInstruction(new Instruction());
+	// If dependency detected, stall by inserting NOP instruction 
+ 	if(!dependencyDetected) 
+ 		pipeline[EXEC].addInstruction(pipeline[DECODE].inst);  
+ 	else  
+ 		pipeline[EXEC].addInstruction(new Instruction()); 
 	
 	// Exec
 	pipeline[EXEC].process();
@@ -85,28 +85,31 @@ bool Pipeline::hasDependency(void) {
 
 	// Checks if dependency exist between Decode stage and Exec, Mem stage
 	// We assume the register file can read/write in the same cycle so no data dependency exist with RAW dependency if an instruction is in Decode and WB.
-	for(int i = EXEC; i <= WB; i++) {
+	for(int i = EXEC; i < WB; i++) {
 
 		if( pipeline[i].inst == NULL )
 			continue;		
 
 		if( pipeline[i].inst->type == NOP )
 			continue;
-
+		
+		
 		if( (pipeline[i].inst->dest != -1) && 
 		    (pipeline[i].inst->dest == pipeline[DECODE].inst->src1 ||
 		     pipeline[i].inst->dest == pipeline[DECODE].inst->src2) ) {
-			//EXEC/MEM-->DECODE
-			//MEM/WB-->DECODE
 			if(forwarding){
-				
-				if (i == EXEC &&pipeline[i].inst->type == LW)
+				if((pipeline[EXEC].inst->dest == pipeline[DECODE].inst->src2||pipeline[EXEC].inst->dest == pipeline[DECODE].inst->src1)&&pipeline[i].inst->type == LW )
+				{
 					return true;
-				else
-					continue;
+				}
+				
 			}
+			else 
+				return true;
 		}
-
+			
+			
+		
 	}
 
 	return false;
